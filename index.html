@@ -147,18 +147,42 @@
             animation: confetti-fall 3s linear forwards;
         }
         @keyframes confetti-fall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        .custom-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
         }
     </style>
 </head>
 <body class="text-slate-800">
 
+    <!-- Password Prompt Modal -->
+    <div id="passwordModal" class="custom-modal hidden">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-sm w-full mx-4 border-t-8 border-indigo-600">
+            <h3 class="text-xl font-black text-slate-800 mb-4">الدخول للوحة المعلمة 🔐</h3>
+            <p class="text-sm text-slate-500 mb-6">يرجى إدخال كلمة المرور للمتابعة</p>
+            <input type="password" id="teacherPassInput" class="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 text-center outline-none focus:border-indigo-500 transition" placeholder="كلمة المرور">
+            <div class="flex gap-2">
+                <button onclick="checkTeacherPassword()" class="flex-grow bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">دخول</button>
+                <button onclick="closePasswordModal()" class="px-4 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold">إلغاء</button>
+            </div>
+            <p id="passError" class="text-red-500 text-xs mt-3 hidden">كلمة المرور غير صحيحة!</p>
+        </div>
+    </div>
+
     <!-- Header Section -->
     <header class="bg-white shadow-md p-6 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-right">
-                <h1 class="text-2xl font-black text-indigo-900 underline decoration-indigo-200">متوسطة وثانوية الحسيني</h1>
+                <h1 class="text-2xl font-black text-indigo-900 underline decoration-indigo-200 decoration-4">متوسطة وثانوية الحسيني</h1>
                 <p class="text-slate-500 font-bold text-sm">المعلمة: عبير الحازمي | مديرة المدرسة: مريم عجيبي</p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 bg-indigo-50 px-4 py-3 rounded-2xl border border-indigo-200">
@@ -170,7 +194,7 @@
                     <span class="text-indigo-800 font-black text-sm">الصف:</span>
                     <input type="text" id="studentClass" class="bg-white px-3 py-1 rounded-lg border border-indigo-200 outline-none font-bold text-indigo-900 w-24" placeholder="مثال: 1/أ">
                 </div>
-                <button onclick="toggleTeacherDashboard()" class="text-[10px] bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-slate-600 font-bold transition">لوحة المعلمة 🔐</button>
+                <button onclick="openPasswordModal()" class="text-[10px] bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-slate-600 font-bold transition">لوحة المعلمة 🔐</button>
             </div>
         </div>
     </header>
@@ -181,18 +205,18 @@
         <div id="teacherDashboard" class="hidden mb-10 p-6 bg-slate-900 text-white rounded-3xl border-4 border-indigo-500 fade-in shadow-2xl">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div>
-                    <h2 class="text-xl font-black">قائمة حضور الطالبات المبدعات 👩‍🎓</h2>
-                    <p class="text-xs text-slate-400" id="firebaseStatus">يتم تسجيل الحضور سحابياً</p>
+                    <h2 class="text-xl font-black text-indigo-400">قائمة حضور الطالبات المبدعات 👩‍🎓</h2>
+                    <p class="text-xs text-slate-400" id="firebaseStatus">يتم تحديث الأسماء فور تسجيلهن</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
-                        <span>📊</span> تحميل كملف Excel (CSV)
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                        <span>📊</span> تصدير إلى Excel (CSV)
                     </button>
-                    <button onclick="toggleTeacherDashboard()" class="text-xs bg-slate-700 px-4 py-2 rounded-xl">إغلاق</button>
+                    <button onclick="toggleTeacherDashboard()" class="text-xs bg-slate-700 px-4 py-2 rounded-xl hover:bg-slate-600">إغلاق اللوحة</button>
                 </div>
             </div>
-            <div id="attendanceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-2">
-                <p class="text-slate-400 italic text-sm text-center col-span-full">بانتظار تسجيل الحضور...</p>
+            <div id="attendanceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-indigo-500">
+                <p class="text-slate-400 italic text-sm text-center col-span-full py-10">بانتظار تسجيل الحضور...</p>
             </div>
         </div>
 
@@ -207,217 +231,138 @@
             <div id="stepIndicator" class="text-sm font-black text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-100">المحطة 1 من 5</div>
         </div>
 
-        <!-- STEP 1: Interactive Selectors & Advanced Properties -->
+        <!-- STEP 1: Interactive CSS Lab -->
         <section id="step1" class="step-content active">
             <div class="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-indigo-100">
                 <h2 class="text-3xl font-black text-indigo-900 mb-8 text-center underline decoration-wavy decoration-indigo-300">المحطة الأولى: مختبر CSS المطور 📖</h2>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <!-- Column Left: Interactive Selection -->
                     <div class="lg:col-span-8 space-y-8">
-                        
-                        <!-- Selectors Unit -->
-                        <div class="bg-blue-50 p-6 rounded-3xl border-2 border-blue-100">
-                            <h3 class="font-black text-blue-900 mb-4 flex items-center gap-2 underline">
-                                <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                                محددات CSS (النوع، المعرف، الفئة)
+                        <!-- Selectors -->
+                        <div class="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-100">
+                            <h3 class="font-black text-indigo-900 mb-4 flex items-center gap-2 underline">
+                                <span class="bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                                محددات CSS (Type, ID, Class)
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div onclick="applySelector('type')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-blue-300 text-center shadow-sm" id="sel-type">
-                                    <span class="block text-blue-800 font-black text-sm">محدد النوع (Type)</span>
-                                    <p class="text-[10px] text-slate-500 mb-2 italic">يطبق على كل الفقرات (p)</p>
-                                    <code class="text-[10px] text-blue-600 bg-blue-50 p-1 rounded">p { }</code>
+                                <div onclick="applySelector('type')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-indigo-300 text-center shadow-sm" id="sel-type">
+                                    <span class="block text-indigo-800 font-black text-sm">النوع (Type)</span>
+                                    <code class="text-[10px] text-indigo-600">p { }</code>
                                 </div>
-                                <div onclick="applySelector('id')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-blue-300 text-center shadow-sm" id="sel-id">
-                                    <span class="block text-blue-800 font-black text-sm">المعرف (ID) 🆔</span>
-                                    <p class="text-[10px] text-slate-500 mb-2 italic">فريد (رمز #) لعنصر واحد</p>
-                                    <code class="text-[10px] text-blue-600 bg-blue-50 p-1 rounded">#header { }</code>
+                                <div onclick="applySelector('id')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-indigo-300 text-center shadow-sm" id="sel-id">
+                                    <span class="block text-indigo-800 font-black text-sm">المعرف (ID) 🆔</span>
+                                    <code class="text-[10px] text-indigo-600">#header { }</code>
                                 </div>
-                                <div onclick="applySelector('class')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-blue-300 text-center shadow-sm" id="sel-class">
-                                    <span class="block text-blue-800 font-black text-sm">الفئة (Class) 🏷️</span>
-                                    <p class="text-[10px] text-slate-500 mb-2 italic">لمجموعة عناصر (رمز .)</p>
-                                    <code class="text-[10px] text-blue-600 bg-blue-50 p-1 rounded">.menu { }</code>
+                                <div onclick="applySelector('class')" class="property-brick bg-white p-4 border-2 border-transparent hover:border-indigo-300 text-center shadow-sm" id="sel-class">
+                                    <span class="block text-indigo-800 font-black text-sm">الفئة (Class) 🏷️</span>
+                                    <code class="text-[10px] text-indigo-600">.menu { }</code>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Advanced Properties Dictionary -->
+                        <!-- Properties -->
                         <div class="bg-slate-50 p-6 rounded-3xl border-2 border-slate-100">
                             <h3 class="font-black text-slate-800 mb-6 flex items-center gap-2 underline">
                                 <span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                                قاموس الخصائص الأساسية
+                                قاموس الخصائص
                             </h3>
-                            
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Colors Group -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200">
-                                    <p class="text-xs font-black text-indigo-700 mb-3 italic underline">🎨 تلوين النص (Color):</p>
+                                    <p class="text-xs font-black text-indigo-700 mb-3 underline">الألوان (Color):</p>
                                     <div class="flex flex-wrap gap-2">
-                                        <button onclick="applyStyle('color', 'blue')" class="property-brick bg-blue-600 text-white px-2 py-1 text-[9px] font-bold">blue</button>
-                                        <button onclick="applyStyle('color', '#FF0000')" class="property-brick bg-red-600 text-white px-2 py-1 text-[9px] font-bold">#FF0000</button>
-                                        <button onclick="applyStyle('color', 'rgb(0, 255, 0)')" class="property-brick bg-emerald-600 text-white px-2 py-1 text-[9px] font-bold">rgb(0,255,0)</button>
+                                        <button onclick="applyStyle('color', 'blue')" class="bg-blue-600 text-white px-2 py-1 text-[9px] font-bold rounded">blue</button>
+                                        <button onclick="applyStyle('color', '#FF0000')" class="bg-red-600 text-white px-2 py-1 text-[9px] font-bold rounded">#FF0000</button>
+                                        <button onclick="applyStyle('color', 'rgb(0, 255, 0)')" class="bg-emerald-600 text-white px-2 py-1 text-[9px] font-bold rounded">rgb(0,255,0)</button>
                                     </div>
                                 </div>
-                                <!-- Font Group -->
                                 <div class="bg-white p-4 rounded-xl border border-slate-200">
-                                    <p class="text-xs font-black text-indigo-700 mb-3 italic underline">📏 الحجم والوزن:</p>
+                                    <p class="text-xs font-black text-indigo-700 mb-3 underline">الخط:</p>
                                     <div class="flex flex-wrap gap-2">
-                                        <button onclick="applyStyle('fontSize', '40px')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">size: 40px</button>
-                                        <button onclick="applyStyle('fontWeight', 'bold')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">weight: bold</button>
-                                    </div>
-                                </div>
-                                <!-- Decoration Group -->
-                                <div class="bg-white p-4 rounded-xl border border-slate-200">
-                                    <p class="text-xs font-black text-indigo-700 mb-3 italic underline">🖋️ النمط والزخرفة:</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <button onclick="applyStyle('fontStyle', 'italic')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">style: italic</button>
-                                        <button onclick="applyStyle('textDecoration', 'underline')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">decoration: underline</button>
-                                    </div>
-                                </div>
-                                <!-- Alignment Group -->
-                                <div class="bg-white p-4 rounded-xl border border-slate-200">
-                                    <p class="text-xs font-black text-indigo-700 mb-3 italic underline">↔️ الاتجاه والمحاذاة:</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <button onclick="applyStyle('direction', 'rtl')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">rtl (عربي)</button>
-                                        <button onclick="applyStyle('textAlign', 'center')" class="property-brick bg-slate-100 px-2 py-1 text-[9px] font-bold">center (منتصف)</button>
+                                        <button onclick="applyStyle('fontSize', '40px')" class="bg-slate-100 px-2 py-1 text-[9px] font-bold rounded border">font-size: 40px</button>
+                                        <button onclick="applyStyle('fontWeight', 'bold')" class="bg-slate-100 px-2 py-1 text-[9px] font-bold rounded border">font-weight: bold</button>
+                                        <button onclick="applyStyle('fontStyle', 'italic')" class="bg-slate-100 px-2 py-1 text-[9px] font-bold rounded border">font-style: italic</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Column Right: Live View Laboratory -->
+                    <!-- Column Right: Laboratory Preview -->
                     <div class="lg:col-span-4 h-full">
                         <div class="sticky top-32">
-                            <div class="bg-slate-900 rounded-[2.5rem] p-8 min-h-[450px] flex flex-col justify-between shadow-2xl relative border-4 border-slate-800">
-                                <div class="absolute top-4 right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest italic">Live Lab | لوحة المعاينة المباشرة</div>
-                                
-                                <div id="previewArea" class="space-y-8 py-12 transition-all duration-300">
-                                    <h2 id="header-el" style="color: white; font-size: 24px; transition: all 0.3s;">أنا عنوان بـ ID (#)</h2>
-                                    <p class="p-tag" style="color: #94a3b8; font-size: 16px; transition: all 0.3s;">أنا فقرة تابعة لمحدد النوع (p).</p>
-                                    <div class="menu-item" style="color: #94a3b8; font-size: 14px; border: 1px dashed #334155; padding: 12px; border-radius: 12px; transition: all 0.3s;">
-                                        أنا عنصر أنتمي لفئة (.class)
-                                    </div>
+                            <div class="bg-slate-900 rounded-[2.5rem] p-8 min-h-[450px] flex flex-col justify-between shadow-2xl relative border-4 border-slate-800 text-center text-white">
+                                <div id="previewArea" class="space-y-8 py-12">
+                                    <h2 id="header-el" style="font-size: 24px;">أنا عنوان (#id)</h2>
+                                    <p class="p-tag" style="color: #94a3b8; font-size: 16px;">أنا فقرة عادية (p).</p>
+                                    <div class="menu-item" style="color: #94a3b8; font-size: 14px; border: 1px dashed #334155; padding: 12px; border-radius: 12px;">أنا عنصر من فئة (.class)</div>
                                 </div>
-
-                                <div class="text-center">
-                                    <button onclick="resetLab()" class="text-[10px] text-slate-400 hover:text-white underline">إعادة ضبط المختبر 🔄</button>
-                                </div>
+                                <button onclick="resetLab()" class="text-[10px] text-slate-400 hover:text-white underline">إعادة الضبط 🔄</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-12 text-center">
-                    <button onclick="goToStep(2)" class="btn-next">فهمت المحددات والخصائص، لنبدأ التحدي! 🚀</button>
+                    <button onclick="goToStep(2)" class="btn-next">بدء رحلة التحدي! 🚀</button>
                 </div>
             </div>
         </section>
 
-        <!-- STEP 2: Inline CSS -->
+        <!-- STEPS 2-4 (Simplified for logic) -->
         <section id="step2" class="step-content">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-indigo-100">
-                <div class="challenge-box text-center">
-                    <h2 class="text-xl font-black text-amber-800 mb-2 italic">🎯 التحدي:</h2>
-                    <p class="text-2xl font-black text-indigo-900 tracking-tight">تغيير لون النص إلى الأحمر</p>
-                </div>
+                <div class="challenge-box text-center"><h2 class="text-xl font-black text-amber-800 mb-2">🎯 التحدي الثاني:</h2><p class="text-2xl font-black text-indigo-900">تغيير لون النص إلى الأحمر</p></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="editor-container">
-                        <textarea id="editor1" class="code-font html-text" oninput="updateStep2()"><h1 style="color: black;">أنا مبرمجة مبدعة</h1></textarea>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px] border-2 border-dashed">
-                        <div id="preview1"></div>
-                        <div id="check1" class="hidden success-badge mt-4">✨ مذهلة! تم تغيير اللون بنجاح.</div>
-                    </div>
+                    <div class="editor-container"><textarea id="editor1" class="code-font html-text" oninput="updateStep2()"><h1 style="color: black;">أنا مبرمجة مبدعة</h1></textarea></div>
+                    <div class="bg-slate-50 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px] border-2 border-dashed"><div id="preview1"></div><div id="check1" class="hidden success-badge mt-4">✨ تم بنجاح!</div></div>
                 </div>
-                <div class="mt-10 text-center">
-                    <button id="btnNext1" onclick="goToStep(3)" disabled class="btn-next">المحطة التالية ➔</button>
-                </div>
+                <div class="mt-10 text-center"><button id="btnNext1" onclick="goToStep(3)" disabled class="btn-next">المحطة التالية ➔</button></div>
             </div>
         </section>
 
-        <!-- STEP 3: Internal CSS -->
         <section id="step3" class="step-content">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-indigo-100">
-                <div class="challenge-box text-center">
-                    <h2 class="text-xl font-black text-amber-800 mb-2 italic">🎯 التحدي:</h2>
-                    <p class="text-2xl font-black text-indigo-900 tracking-tight">تغيير محاذاة النص إلى المنتصف (center)</p>
-                </div>
+                <div class="challenge-box text-center"><h2 class="text-xl font-black text-amber-800 mb-2">🎯 التحدي الثالث:</h2><p class="text-2xl font-black text-indigo-900">تغيير محاذاة النص إلى المنتصف (center)</p></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="editor-container">
-                        <textarea id="editor2" class="code-font css-text" oninput="updateStep3()"><style>h2 { text-align: right; color: indigo; }</style><h2>مرحباً بكِ في الحاسب الآلي</h2></textarea>
-                    </div>
-                    <div class="bg-slate-50 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px] border-2 border-dashed">
-                        <div id="preview2" class="w-full text-center"></div>
-                        <div id="check2" class="hidden success-badge mt-4">⭐ رائعة! النص الآن في المنتصف.</div>
-                    </div>
+                    <div class="editor-container"><textarea id="editor2" class="code-font css-text" oninput="updateStep3()"><style>h2 { text-align: right; color: indigo; }</style><h2>مرحباً بكِ في الحاسب</h2></textarea></div>
+                    <div class="bg-slate-50 rounded-xl p-8 flex flex-col items-center justify-center min-h-[200px] border-2 border-dashed"><div id="preview2" class="w-full text-center"></div><div id="check2" class="hidden success-badge mt-4">⭐ رائع جداً!</div></div>
                 </div>
-                <div class="mt-10 text-center">
-                    <button id="btnNext2" onclick="goToStep(4)" disabled class="btn-next">المحطة التالية ➔</button>
-                </div>
+                <div class="mt-10 text-center"><button id="btnNext2" onclick="goToStep(4)" disabled class="btn-next">المحطة التالية ➔</button></div>
             </div>
         </section>
 
-        <!-- STEP 4: External CSS -->
         <section id="step4" class="step-content">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-indigo-100">
-                <div class="challenge-box text-center">
-                    <h2 class="text-xl font-black text-amber-800 mb-2 italic">🎯 التحدي:</h2>
-                    <p class="text-2xl font-black text-indigo-900 uppercase">ربط ملف التنسيق الخارجي style.css</p>
-                </div>
+                <div class="challenge-box text-center"><h2 class="text-xl font-black text-amber-800 mb-2">🎯 التحدي الرابع:</h2><p class="text-2xl font-black text-indigo-900 uppercase">ربط ملف style.css</p></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-4">
-                        <div class="editor-container">
-                            <div class="bg-slate-900 p-2 text-[10px] text-teal-400 font-black text-center border-b border-slate-800">index.html (ملف الهيكل)</div>
-                            <textarea id="editor4_html" class="code-font html-text" oninput="updateStep4()" placeholder="أضيفي وسم link هنا..."><head><!-- اربطي الملف هنا --></head><body><h3>تم الربط بنجاح!</h3></body></textarea>
-                        </div>
-                        <div class="editor-container">
-                            <div class="bg-slate-900 p-2 text-[10px] text-amber-400 font-black text-center border-b border-slate-800">style.css (ملف التنسيق)</div>
-                            <textarea id="editor4_css" class="code-font css-text" oninput="updateStep4()">h3 { color: white; background: #6366f1; padding: 30px; text-align: center; border-radius: 20px; }</textarea>
-                        </div>
+                        <div class="editor-container"><textarea id="editor4_html" class="code-font html-text" oninput="updateStep4()"><head><!-- اربطي هنا --></head><body><h3>تم الربط!</h3></body></textarea></div>
+                        <div class="editor-container"><textarea id="editor4_css" class="code-font css-text" oninput="updateStep4()">h3 { color: white; background: #6366f1; padding: 30px; text-align: center; border-radius: 20px; }</textarea></div>
                     </div>
-                    <div class="bg-slate-50 rounded-xl p-4 flex flex-col items-center justify-center min-h-[300px] border-2 border-dashed">
-                        <iframe id="preview3" class="w-full h-full border-none rounded-lg bg-white shadow-inner"></iframe>
-                        <div id="check3" class="hidden success-badge mt-4">🔗 تم الربط بنجاح باهر!</div>
-                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 flex flex-col items-center justify-center min-h-[300px] border-2 border-dashed"><iframe id="preview3" class="w-full h-full border-none rounded-lg bg-white shadow-inner"></iframe><div id="check3" class="hidden success-badge mt-4">🔗 مبرمجة محترفة!</div></div>
                 </div>
-                <div class="mt-10 text-center">
-                    <button id="btnNext3" onclick="goToStep(5)" disabled class="btn-next">تحدي العجلة النهائي ➔</button>
-                </div>
+                <div class="mt-10 text-center"><button id="btnNext3" onclick="goToStep(5)" disabled class="btn-next">عجلة الإبداع ➔</button></div>
             </div>
         </section>
 
-        <!-- STEP 5: Gamified Wheel -->
+        <!-- STEP 5: Final Wheel -->
         <section id="step5" class="step-content">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border-4 border-indigo-200">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-black text-indigo-900 mb-2">المحطة النهائية: تحدي العجلة المبرمجة 🎡</h2>
-                    <p class="font-bold text-slate-500 italic">لفي العجلة ونفذي المهمة التي تظهر لكِ لتفوزي بالوسام!</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <!-- Column: The Wheel -->
-                    <div class="lg:col-span-4 text-center">
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border-4 border-indigo-200 text-center">
+                <h2 class="text-3xl font-black text-indigo-900 mb-2">المحطة النهائية: عجلة التحدي 🎡</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+                    <div class="lg:col-span-4">
                         <div id="wheel-container" class="mb-6"><div id="wheel-pointer"></div><div id="wheel"></div></div>
-                        <button id="spin-btn" onclick="spinWheel()" class="bg-red-500 hover:bg-red-600 text-white font-black py-4 px-10 rounded-full shadow-lg transform active:scale-95 transition-all">لفي العجلة! ✨</button>
-                        
-                        <div id="current-mission" class="mt-8 p-5 bg-indigo-50 border-2 border-indigo-200 rounded-2xl hidden animate-bounce">
-                            <span class="block text-[10px] font-black text-indigo-400 uppercase mb-2 italic">مهمتكِ الحالية:</span>
-                            <p id="mission-text" class="text-lg font-black text-indigo-900"></p>
-                        </div>
+                        <button id="spin-btn" onclick="spinWheel()" class="bg-red-500 hover:bg-red-600 text-white font-black py-4 px-10 rounded-full shadow-lg transition-all">لفي العجلة! ✨</button>
+                        <div id="current-mission" class="mt-8 p-5 bg-indigo-50 border-2 border-indigo-200 rounded-2xl hidden animate-bounce"><p id="mission-text" class="text-lg font-black text-indigo-900"></p></div>
                     </div>
-
-                    <!-- Column: Final Editors -->
                     <div class="lg:col-span-8 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="editor-container"><textarea id="finalHtml" class="code-font html-text" oninput="updateFinal()"><div class="my-box"><h1>أنا مبرمجة ذكية</h1><p>أتعلم في مدرسة الحسيني</p></div></textarea></div>
+                            <div class="editor-container"><textarea id="finalHtml" class="code-font html-text" oninput="updateFinal()"><div class="my-box"><h1>مبرمجة المستقبل</h1></div></textarea></div>
                             <div class="editor-container"><textarea id="finalCss" class="code-font css-text" oninput="updateFinal()">.my-box { padding: 30px; background: white; border: 4px solid #4f46e5; border-radius: 20px; text-align: center; }</textarea></div>
                         </div>
-
-                        <!-- Final Preview with Confetti potential -->
                         <div class="bg-slate-100 rounded-[2.5rem] border-4 border-white shadow-inner p-6 min-h-[300px] flex flex-col items-center justify-center relative">
-                            <iframe id="finalPreview" class="w-full h-48 border-none rounded-2xl bg-white shadow-sm"></iframe>
-                            <div id="mission-status" class="mt-4 hidden success-badge">✅ مذهلة! تم تنفيذ المهمة باحترافية تامة.</div>
+                            <iframe id="finalPreview" class="w-full h-48 border-none rounded-xl bg-white"></iframe>
+                            <div id="mission-status" class="mt-4 hidden success-badge">✅ أنجزتِ المهمة ببراعة!</div>
                         </div>
                     </div>
                 </div>
@@ -425,11 +370,9 @@
         </section>
     </main>
 
-    <footer class="mt-10 py-10 text-center text-slate-400 font-bold text-xs bg-white border-t border-slate-100">
-        متوسطة وثانوية الحسيني - قسم الحاسب الآلي | إعداد وتصميم: أ. عبير الحازمي
-    </footer>
+    <footer class="mt-10 py-10 text-center text-slate-400 font-bold text-xs bg-white border-t">متوسطة وثانوية الحسيني - أ. عبير الحازمي</footer>
 
-    <!-- Firebase System -->
+    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -438,39 +381,27 @@
         let db, auth, currentUser, appId;
         let attendanceData = [];
 
-        async function initFirebase() {
+        async function init() {
             try {
                 const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-                if (!configStr) return; 
-
-                const firebaseConfig = JSON.parse(configStr);
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'hussaini-v1';
-                const app = initializeApp(firebaseConfig);
+                if (!configStr) return;
+                const config = JSON.parse(configStr);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'hussaini-app';
+                const app = initializeApp(config);
                 auth = getAuth(app);
                 db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else { await signInAnonymously(auth); }
-
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    if (user) loadAttendance();
-                });
-            } catch (e) { console.warn("Firebase restricted mode."); }
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                else await signInAnonymously(auth);
+                onAuthStateChanged(auth, u => { currentUser = u; if (u) loadAttendance(); });
+            } catch (e) { console.error("Firebase restricted."); }
         }
 
-        window.registerStudent = async (name, sClass) => {
+        window.registerStudent = async (n, c) => {
             if (!db || !currentUser) return;
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'), {
-                    name, class: sClass, timestamp: serverTimestamp(), uid: currentUser.uid
-                });
-            } catch (e) { }
+            try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'), { name: n, class: c, timestamp: serverTimestamp(), uid: currentUser.uid }); } catch (e) {}
         };
 
         function loadAttendance() {
-            if (!db) return;
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'));
             onSnapshot(q, (snapshot) => {
                 attendanceData = [];
@@ -480,109 +411,83 @@
                     const data = doc.data();
                     attendanceData.push(data);
                     const div = document.createElement('div');
-                    div.className = "bg-slate-800 p-3 rounded-xl border border-indigo-500/30 flex justify-between items-center";
-                    div.innerHTML = `<div class="flex flex-col"><span class="text-indigo-400 font-bold text-sm">${data.name}</span><span class="text-slate-500 text-[10px]">الصف: ${data.class}</span></div><span class="text-emerald-500 text-[10px]">حاضرة ✅</span>`;
+                    div.className = "bg-slate-800 p-4 rounded-2xl border border-indigo-500/30 flex justify-between items-center transition hover:border-indigo-400";
+                    div.innerHTML = `<div class="flex flex-col"><span class="text-indigo-300 font-black">${data.name}</span><span class="text-slate-500 text-[10px]">الصف: ${data.class}</span></div><span class="text-emerald-400 text-[10px]">حاضرة ✅</span>`;
                     list.appendChild(div);
                 });
             });
         }
 
         window.exportToExcel = () => {
-            if (attendanceData.length === 0) return;
-            let csv = "\uFEFFاسم الطالبة,الصف الدراسي,وقت التسجيل\n";
+            if (attendanceData.length === 0) { alert("لا توجد بيانات حالياً"); return; }
+            let csv = "\uFEFFالاسم,الصف,التوقيت\n";
             attendanceData.forEach(i => {
-                const date = i.timestamp ? new Date(i.timestamp.seconds * 1000).toLocaleString('ar-SA') : "غير متوفر";
-                csv += `${i.name},${i.class},${date}\n`;
+                const d = i.timestamp ? new Date(i.timestamp.seconds * 1000).toLocaleString('ar-SA') : "-";
+                csv += `${i.name},${i.class},${d}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `حضور_طالبات_الحسيني.csv`;
+            link.download = `حضور_طالبات_الحسيني_${new Date().toLocaleDateString()}.csv`;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         };
-
-        initFirebase();
+        init();
     </script>
 
     <script>
-        // --- STEP 1: INTERACTIVE LOGIC ---
-        let currentTarget = "all";
+        // Teacher Password System
+        const TEACHER_PASS = "1234"; 
 
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('teacherPassInput').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('passError').classList.add('hidden');
+        }
+
+        function checkTeacherPassword() {
+            const input = document.getElementById('teacherPassInput').value;
+            if (input === TEACHER_PASS) {
+                closePasswordModal();
+                toggleTeacherDashboard(true);
+            } else {
+                document.getElementById('passError').classList.remove('hidden');
+                document.getElementById('teacherPassInput').value = "";
+            }
+        }
+
+        function toggleTeacherDashboard(forceShow = false) {
+            const dash = document.getElementById('teacherDashboard');
+            if (forceShow) dash.classList.remove('hidden');
+            else dash.classList.toggle('hidden');
+        }
+
+        // Lab Logic
+        let currentTarget = "all";
         function applySelector(type) {
             document.querySelectorAll('.property-brick').forEach(b => b.classList.remove('active-selector'));
             document.getElementById('sel-' + type).classList.add('active-selector');
             currentTarget = type;
-            
-            // Visual indicator on target
             document.querySelectorAll('#previewArea *').forEach(el => el.style.boxShadow = "none");
             if(type === 'type') document.querySelector('.p-tag').style.boxShadow = "0 0 10px #10b981";
             if(type === 'id') document.getElementById('header-el').style.boxShadow = "0 0 10px #10b981";
             if(type === 'class') document.querySelector('.menu-item').style.boxShadow = "0 0 10px #10b981";
         }
-
         function applyStyle(prop, val) {
-            const h = document.getElementById('header-el');
-            const p = document.querySelector('.p-tag');
-            const c = document.querySelector('.menu-item');
-            
+            const h = document.getElementById('header-el'), p = document.querySelector('.p-tag'), c = document.querySelector('.menu-item');
             if (currentTarget === "type") p.style[prop] = val;
             else if (currentTarget === "id") h.style[prop] = val;
             else if (currentTarget === "class") c.style[prop] = val;
             else { [h, p, c].forEach(el => el.style[prop] = val); }
         }
-
         function resetLab() { location.reload(); }
 
-        // --- GENERAL FLOW & CHALLENGES ---
-        const studentNameInput = document.getElementById('studentName');
-        const studentClassInput = document.getElementById('studentClass');
-
-        async function goToStep(step) {
-            const name = studentNameInput.value.trim();
-            const sClass = studentClassInput.value.trim();
-            if (step > 1 && (!name || !sClass)) { alert("من فضلكِ، ادخلي اسمكِ وصفكِ للمتابعة."); return; }
-            if (step === 2 && window.registerStudent) await window.registerStudent(name, sClass);
-            
-            document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
-            document.getElementById('step' + step).classList.add('active');
-            document.getElementById('progressBar').style.width = (step * 20) + '%';
-            document.getElementById('stepIndicator').innerText = `المحطة ${step} من 5`;
-            
-            const txt = `أنتِ مبدعة يا ${name} (الصف ${sClass}) واصلي! ➔`;
-            ['btnNext1', 'btnNext2', 'btnNext3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; });
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if(step === 2) updateStep2(); if(step === 3) updateStep3(); if(step === 4) updateStep4(); if(step === 5) initWheel();
-        }
-
-        function updateStep2() {
-            const h = document.getElementById('editor1').value;
-            document.getElementById('preview1').innerHTML = h;
-            const success = h.toLowerCase().includes('color: red') || h.toLowerCase().includes('color:red');
-            document.getElementById('btnNext1').disabled = !success;
-            document.getElementById('check1').classList.toggle('hidden', !success);
-        }
-
-        function updateStep3() {
-            const h = document.getElementById('editor2').value;
-            document.getElementById('preview2').innerHTML = h;
-            const success = h.toLowerCase().includes('text-align: center') || h.toLowerCase().includes('text-align:center');
-            document.getElementById('btnNext2').disabled = !success;
-            document.getElementById('check2').classList.toggle('hidden', !success);
-        }
-
-        function updateStep4() {
-            const h = document.getElementById('editor4_html').value;
-            const c = document.getElementById('editor4_css').value;
-            const isLinked = h.toLowerCase().includes('link') && h.toLowerCase().includes('style.css');
-            const content = `<html><head>${isLinked ? `<style>${c}</style>` : ''}</head><body style="display:flex;justify-content:center;align-items:center;min-height:150px;margin:0;">${h}</body></html>`;
-            const doc = preview3.contentDocument || preview3.contentWindow.document;
-            doc.open(); doc.write(content); doc.close();
-            document.getElementById('btnNext3').disabled = !isLinked;
-            document.getElementById('check3').classList.toggle('hidden', !isLinked);
-        }
-
-        // --- FINAL WHEEL LOGIC ---
+        // Challenges & Wheel
         const missions = [
             { text: "تغير لون النص إلى الأزرق rgb(0, 0, 255)", check: (h, c) => c.includes('rgb(0,0,255)') || c.includes('blue') },
             { text: "تغير حجم الخط h1 إلى 50px", check: (h, c) => c.includes('font-size:50px') },
@@ -591,60 +496,61 @@
             { text: "تغير وزن الخط ليكون عريضاً (bold)", check: (h, c) => c.includes('font-weight:bold') },
             { text: "تغير الحواف لتكون دائرية border-radius: 50px", check: (h, c) => c.includes('border-radius:50px') }
         ];
-
         let currentMissionIndex = -1;
 
+        async function goToStep(s) {
+            const n = document.getElementById('studentName').value.trim();
+            const c = document.getElementById('studentClass').value.trim();
+            if (s > 1 && (!n || !c)) { alert("ادخلي اسمكِ وصفكِ أولاً"); return; }
+            if (s === 2 && window.registerStudent) await window.registerStudent(n, c);
+            document.querySelectorAll('.step-content').forEach(x => x.classList.remove('active'));
+            document.getElementById('step' + s).classList.add('active');
+            document.getElementById('progressBar').style.width = (s * 20) + '%';
+            document.getElementById('stepIndicator').innerText = `المحطة ${s} من 5`;
+            const txt = `أنتِ مبرمجة الصف ${c} المبدعة يا ${n} ➔`;
+            ['btnNext1', 'btnNext2', 'btnNext3'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if(s === 2) updateStep2(); if(s === 3) updateStep3(); if(s === 4) updateStep4(); if(s === 5) initWheel();
+        }
+
+        function updateStep2() { const h = document.getElementById('editor1').value; document.getElementById('preview1').innerHTML = h; const ok = h.toLowerCase().includes('color: red') || h.toLowerCase().includes('color:red'); document.getElementById('btnNext1').disabled = !ok; document.getElementById('check1').classList.toggle('hidden', !ok); }
+        function updateStep3() { const h = document.getElementById('editor2').value; document.getElementById('preview2').innerHTML = h; const ok = h.toLowerCase().includes('text-align: center') || h.toLowerCase().includes('text-align:center'); document.getElementById('btnNext2').disabled = !ok; document.getElementById('check2').classList.toggle('hidden', !ok); }
+        function updateStep4() { const h = document.getElementById('editor4_html').value, c = document.getElementById('editor4_css').value, linked = h.toLowerCase().includes('link') && h.toLowerCase().includes('style.css'); preview3.contentDocument.open(); preview3.contentDocument.write(`<html><head>${linked ? `<style>${c}</style>` : ''}</head><body style="display:flex;justify-content:center;align-items:center;min-height:150px;margin:0;">${h}</body></html>`); preview3.contentDocument.close(); document.getElementById('btnNext3').disabled = !linked; document.getElementById('check3').classList.toggle('hidden', !linked); }
+
         function initWheel() {
-            const wheel = document.getElementById('wheel');
-            wheel.innerHTML = "";
+            const w = document.getElementById('wheel');
+            w.innerHTML = "";
             missions.forEach((m, i) => {
                 const seg = document.createElement('div');
                 seg.className = 'wheel-segment';
                 seg.style.transform = `rotate(${i * 60}deg) skewY(30deg)`;
-                seg.style.backgroundColor = `hsl(${i * 60}, 70%, 50%)`;
-                wheel.appendChild(seg);
+                seg.style.backgroundColor = `hsl(${i * 60}, 70%, 55%)`;
+                w.appendChild(seg);
             });
             updateFinal();
         }
-
         function spinWheel() {
-            const rand = Math.floor(Math.random() * 6);
-            document.getElementById('wheel').style.transform = `rotate(-${1800 + (rand * 60)}deg)`;
+            const r = Math.floor(Math.random() * 6);
+            document.getElementById('wheel').style.transform = `rotate(-${1800 + (r * 60)}deg)`;
             document.getElementById('spin-btn').disabled = true;
             document.getElementById('mission-status').classList.add('hidden');
             setTimeout(() => {
-                currentMissionIndex = 5 - rand;
+                currentMissionIndex = 5 - r;
                 document.getElementById('mission-text').innerText = missions[currentMissionIndex].text;
                 document.getElementById('current-mission').classList.remove('hidden');
                 document.getElementById('spin-btn').disabled = false;
                 updateFinal();
             }, 3000);
         }
-
         function updateFinal() {
-            const h = document.getElementById('finalHtml').value;
-            const c = document.getElementById('finalCss').value;
-            const doc = finalPreview.contentDocument || finalPreview.contentWindow.document;
-            doc.open(); doc.write(`<html><head><style>body { font-family: 'Tajawal', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; background: transparent; min-height: 150px; } ${c}</style></head><body>${h}</body></html>`); doc.close();
+            const h = document.getElementById('finalHtml').value, c = document.getElementById('finalCss').value;
+            finalPreview.contentDocument.open(); finalPreview.contentDocument.write(`<html><head><style>body { font-family: 'Tajawal', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; background: transparent; min-height: 150px; } ${c}</style></head><body>${h}</body></html>`); finalPreview.contentDocument.close();
             if (currentMissionIndex !== -1 && missions[currentMissionIndex].check(h, c.replace(/\s/g, '').toLowerCase())) {
                 document.getElementById('mission-status').classList.remove('hidden');
                 createConfetti();
             }
         }
-
-        function createConfetti() {
-            for(let i=0; i<30; i++) {
-                const c = document.createElement('div');
-                c.className = 'confetti';
-                c.style.left = Math.random() * 100 + 'vw';
-                c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                c.style.width = '10px'; c.style.height = '10px';
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 3000);
-            }
-        }
-
-        function toggleTeacherDashboard() { document.getElementById('teacherDashboard').classList.toggle('hidden'); }
+        function createConfetti() { for(let i=0; i<30; i++) { const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`; c.style.width = '8px'; c.style.height = '8px'; document.body.appendChild(c); setTimeout(() => c.remove(), 3000); } }
     </script>
 </body>
 </html>
